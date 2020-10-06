@@ -17,7 +17,6 @@ aws_arg_group = parser.add_argument_group('aws_arg_group')
 aws_arg_group.add_argument('--aws_key_id', help='AWS key id for S3 storage')
 aws_arg_group.add_argument('--aws_secret_key', help='AWS secret key for S3 storage')
 aws_arg_group.add_argument('--aws_bucket_id', help='AWS Bucket for S3 storage')
-aws_arg_group.add_argument('--aws_host', help='AWS hostname or IP address used for the boto3 session.')
 aws_arg_group.add_argument('--store_aws',
                            help='AWS Bucket for S3 storage, if True, remember to set the name of the file as the name will be over written. ',
                            action='store_true')
@@ -30,6 +29,9 @@ class LCGClient:
     def __init__(self, host='127.0.0.1', port=5002, **kwargs):
         self._host = host
         self._port = str(port)
+        self.aws_key_id = kwargs.get("aws_key_id")
+        self.aws_secret_key = kwargs.get("aws_secret_key")
+        self.aws_bucket_id = kwargs.get("aws_bucket_id")
         self._endpoint = kwargs.get("endpoint", '/api/v1/gcg')
 
         self._url = None
@@ -68,22 +70,24 @@ def main():
     aws_key_id = cli_args.aws_key_id or None
     aws_secret_key = cli_args.aws_secret_key or None
     aws_bucket_id = cli_args.aws_bucket_id or None
-    aws_host = cli_args.aws_host or '127.0.0.1'
+    #
     store_aws = cli_args.store_aws or False
     name = cli_args.name or None
     port = cli_args.port or '5000'
     host = cli_args.host or 'ec2-18-224-56-249.us-east-2.compute.amazonaws.com'
     return_type = cli_args.return_type
 
-    client = LCGClient(host=host, port=port)
+    client = LCGClient(
+        host=host,
+        port=port,
+        aws_key_id=aws_key_id,
+        aws_secret_key=aws_secret_key,
+        aws_bucket_id=aws_bucket_id,
+    )
 
     response = client.gen_base_config(
         data=data,
         store_aws=store_aws,
-        aws_key_id=aws_key_id,
-        aws_secret_key=aws_secret_key,
-        aws_bucket_id=aws_bucket_id,
-        aws_host=aws_host,
         host=host,
         port=port,
         name=name,
